@@ -1,5 +1,7 @@
-from pydantic import BaseModel # validates the types of the fields
+from pydantic import BaseModel  # validates the types of the fields
 from typing import Optional, List
+
+
 class CafeHopAttributes(BaseModel):
     wifi: bool
     outlets: bool
@@ -7,8 +9,11 @@ class CafeHopAttributes(BaseModel):
     spacious_level: int
     comfort_level: int
     seating_level: int
+
+
 class Cafe(BaseModel):
     id: Optional[str] = None
+    name: Optional[str]
     business_hours: Optional[List[dict]]  # business hours as a list of dicts
     display_phone: Optional[str]
     is_closed: bool
@@ -16,7 +21,8 @@ class Cafe(BaseModel):
     rating: Optional[float]
     yelp_url: Optional[str]
     cafe_hop_attributes: Optional[CafeHopAttributes]
-    
+
+
 class UpdateCafeHopAttributesDTO(BaseModel):
     wifi: Optional[bool] = None
     outlets: Optional[bool] = None
