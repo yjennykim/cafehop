@@ -1,0 +1,96 @@
+{
+    "id": "Gp6A9YsCv6qfSiCT5uN6EQ",
+    "alias": "café-hagen-seattle",
+    "name": "Café Hagen",
+    "image_url": "https://s3-media2.fl.yelpcdn.com/bphoto/-kH2qcrzIfvj8sV8YWNX-w/o.jpg",
+    "is_claimed": false,
+    "is_closed": false,
+    "url": "https://www.yelp.com/biz/caf%C3%A9-hagen-seattle?adjust_creative=Q8iUDW4w2hBwui19nFMTHA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_lookup&utm_source=Q8iUDW4w2hBwui19nFMTHA",
+    "phone": "+12069132847",
+    "display_phone": "(206) 913-2847",
+    "review_count": 533,
+    "categories": [
+        {
+            "alias": "scandinavian",
+            "title": "Scandinavian"
+        },
+        {
+            "alias": "cafes",
+            "title": "Cafes"
+        }
+    ],
+    "rating": 4.3,
+    "location": {
+        "address1": "1252 Thomas St",
+        "address2": "",
+        "address3": null,
+        "city": "Seattle",
+        "zip_code": "98109",
+        "country": "US",
+        "state": "WA",
+        "display_address": [
+            "1252 Thomas St",
+            "Seattle, WA 98109"
+        ],
+        "cross_streets": "N Pontius Ave & N Yale Ave"
+    },
+    "coordinates": {
+        "latitude": 47.62101,
+        "longitude": -122.331548
+    },
+    "photos": [],
+    "price": "$$",
+    "hours": [
+        {
+            "open": [
+                {
+                    "is_overnight": false,
+                    "start": "0700",
+                    "end": "1600",
+                    "day": 0
+                },
+                {
+                    "is_overnight": false,
+                    "start": "0700",
+                    "end": "1600",
+                    "day": 1
+                },
+                {
+                    "is_overnight": false,
+                    "start": "0700",
+                    "end": "1600",
+                    "day": 2
+                },
+                {
+                    "is_overnight": false,
+                    "start": "0700",
+                    "end": "1800",
+                    "day": 3
+                },
+                {
+                    "is_overnight": false,
+                    "start": "0700",
+                    "end": "1800",
+                    "day": 4
+                },
+                {
+                    "is_overnight": false,
+                    "start": "0800",
+                    "end": "1800",
+                    "day": 5
+                },
+                {
+                    "is_overnight": false,
+                    "start": "0800",
+                    "end": "1800",
+                    "day": 6
+                }
+            ],
+            "hours_type": "REGULAR",
+            "is_open_now": false
+        }
+    ],
+    "transactions": [
+        "delivery"
+    ]
+}

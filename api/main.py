@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,6 +12,9 @@ from bson import ObjectId
 from typing import List
 import requests
 import json
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
 
@@ -47,7 +51,24 @@ async def shutdown_db_client(app):
     print("Database disconnected.")
 
 
-app = FastAPI(lifespan=lifespan)
+limiter = Limiter(key_func=get_remote_address)
+app = FastAPI(
+    title="Cafe Hop API",
+    description="API for discovering work-friendly cafes in Seattle",
+    version="1.0.0",
+    contact={"name": "Jenny Kim", "email": "jennykimcode@gmail.com"},
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 # hello world endpoint
@@ -153,7 +174,8 @@ async def create_cafe(yelp_id: str, cafe_hop_attributes: CafeHopAttributes):
 
 
 @app.get("/v1/get-yelp-cafes/{search}")
-async def search_yelp_for_cafes(search: str):
+@limiter.limit("5/hour")
+async def search_yelp_for_cafes(request: Request, search: str):
     yelp_url = "https://api.yelp.com/v3/businesses/search"
     yelp_headers = {
         "Authorization": f"Bearer {os.getenv("YELP_API_KEY")}",
@@ -181,7 +203,8 @@ async def search_yelp_for_cafes(search: str):
 
 
 @app.get("/v1/get-yelp-cafe/{id}")
-async def get_cafe_by_yelp_id(id: str):
+@limiter.limit("10/hour")
+async def get_cafe_by_yelp_id(request: Request, id: str):
     yelp_url = f"https://api.yelp.com/v3/businesses/{id}"
     yelp_headers = {
         "Authorization": f"Bearer {os.getenv("YELP_API_KEY")}",
