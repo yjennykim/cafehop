@@ -15,6 +15,7 @@ const Feed = () => {
         const data = await response.json();
         setCafes(data); 
         setFilteredCafes(data);
+        console.log("cafes", data)
       } catch (error) {
         console.error("Error fetching cafes:", error);
       }
@@ -24,14 +25,16 @@ const Feed = () => {
   }, []);
 
   // filter cafes based on search term
-  const handleSearch = (searchTerm) => {
-    setSearchTerm(searchTerm);
-
-    const filtered = cafes.filter((cafe) =>
-      cafe.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      cafe.address.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+  const handleSearch = ({ query, location }) => {
+    setSearchTerm(query); 
+  
+    const filtered = cafes.filter((cafe) => {
+      const nameMatch = cafe.name.toLowerCase().includes(query.toLowerCase());
+      const addressMatch = cafe.address.toLowerCase().includes(location.toLowerCase());
+      return nameMatch && addressMatch;
+    });
+  
+    console.log(`Filtering cafes for "${query}" in "${location}":`, filtered);
     setFilteredCafes(filtered);
   };
 
@@ -44,13 +47,13 @@ const Feed = () => {
         <p className="text-xs ml-2">[{filteredCafes.length}]</p>
       </div>
 
-      <p>Discover the Best Cafes in Seattle for Work and Productivity - Beyond Just Coffee</p>
+      <p>Discover the Best Cafes for Work and Productivity - Beyond Just Coffee</p>
       <FilterButton />
       <hr className="mt-3"/>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
         {filteredCafes.length > 0 ? (
-          filteredCafes.map((cafe) => (
-            <CafeCard key={cafe.id} cafe={cafe} />
+          filteredCafes.map((cafe, index) => (
+            <CafeCard key={index} cafe={cafe} />
           ))
         ) : (
           <p className="text-center text-gray-500">No cafes found</p>
