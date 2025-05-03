@@ -2,12 +2,19 @@ import React, { useState, useEffect } from "react";
 import SearchBar from "./SearchBar"; 
 import CafeCard from "./CafeCard";
 import FilterButton from "./FilterButton";
-
+import CafeMap from "./CafeMap";
 const Feed = () => {
   const [cafes, setCafes] = useState([]); // all cafes from the API
   const [filteredCafes, setFilteredCafes] = useState([]);  // cafes after filtering based on search term
+  const [location, setLocation] = useState("Anywhere");
   const [searchTerm, setSearchTerm] = useState("");
 
+  const toTitleCase = (str) => {
+    return str
+      .toLowerCase()
+      .replace(/\b(\w)/g, (match) => match.toUpperCase());
+  };
+  
   useEffect(() => {
     const fetchCafes = async () => {
       try {
@@ -27,6 +34,7 @@ const Feed = () => {
   // filter cafes based on search term
   const handleSearch = ({ query, location }) => {
     setSearchTerm(query); 
+    setLocation(toTitleCase(location));
   
     const filtered = cafes.filter((cafe) => {
       const nameMatch = cafe.name.toLowerCase().includes(query.toLowerCase());
@@ -41,9 +49,10 @@ const Feed = () => {
   return (
     <div className="container mx-auto">
       <SearchBar onSearch={handleSearch} />
+      <CafeMap cafes={filteredCafes} />
 
       <div className="flex items-end py-5">
-        <h1 className="text-4xl leading-none">Seattle Cafehop</h1>
+        <h1 className="text-4xl leading-none">Cafehop [{location}]</h1>
         <p className="text-xs ml-2">[{filteredCafes.length}]</p>
       </div>
 
