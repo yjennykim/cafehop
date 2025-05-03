@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import Body, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -7,9 +7,9 @@ from contextlib import asynccontextmanager
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
-from models import Cafe, UpdateCafeHopAttributesDTO, CafeHopAttributes
+from models import Cafe, CafeHopAttributes
 from bson import ObjectId
-from typing import List
+from typing import List, Optional
 import requests
 import json
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -54,9 +54,9 @@ async def shutdown_db_client(app):
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
     title="Cafe Hop API",
-    description="API for discovering work-friendly cafes in Seattle",
+    description="API for discovering work-friendly cafes in the city",
     version="1.0.0",
-    contact={"name": "Jenny Kim", "email": "jennykimcode@gmail.com"},
+    contact={"name": "Jenny Kim", "email": "jennykimcode+cafe-hop@gmail.com"},
     lifespan=lifespan,
 )
 
@@ -77,51 +77,34 @@ def read_root():
     return {"Hello": "World"}
 
 
+# get a cafe by Id
 @app.get("/v1/get-cafe/{id}", response_model=Cafe)
-async def get_cafe_by_id(id: str):
+@limiter.limit("5/minute")
+async def get_cafe_by_id(request: Request, id: str):
     cafe = await app.mongodb["cafes"].find_one({"_id": ObjectId(id)})
     if cafe is None:
         raise HTTPException(status_code=404, detail="Cafe not found")
     return cafe
 
 
-@app.put("/v1/update-cafe/{id}", response_model=Cafe)
-async def update_cafe(id: str, cafe_update: UpdateCafeHopAttributesDTO):
-    updated_result = await app.mongodb["cafes"].update_one(
-        {"_id": ObjectId(id)},
-        {
-            "$set": cafe_update.dict(exclude_unset=True)
-        },  # convert to dict, excluding fields that were not provided
-    )
-
-    if updated_result.modified_count == 0:
-        raise HTTPException(
-            status_code=404, detail="Cafe not found or no update was needed"
-        )
-
-    updated_cafe = await app.mongodb["cafes"].find_one({"_id": ObjectId(id)})
-    return updated_cafe
-
-
+# get list of cafes
 @app.get("/v1/get-cafes", response_model=List[Cafe])
+@limiter.limit("5/minute")
 async def get_cafes(
-    hasWifi: bool = Query(
-        None, description="Filter by wifi availability", example=True
+    request: Request,
+    hasWifi: Optional[bool] = Query(None, description="Filter by wifi availability"),
+    hasOutlets: Optional[bool] = Query(
+        None, description="Filter by outlets availability"
     ),
-    hasOutlets: bool = Query(
-        None, description="Filter by outlets availability", example=True
+    neighborhood: Optional[str] = Query(None, description="Filter by neighborhood"),
+    spacious_level: Optional[int] = Query(
+        None, ge=1, le=5, description="Spaciousness level at least (1-5)"
     ),
-    neighborhood: str = Query(
-        None, description="Filter by neighborhood", example="Capitol Hlil"
+    comfort_level: Optional[int] = Query(
+        None, ge=1, le=5, description="Comfort level at least (1-5)"
     ),
-    spacious_level: int = Query(
-        None, description="Spaciousness level at least (1-5)", example="4"
-    ),
-    comfort_level: int = Query(
-        None, description="Comfort level at least (1-5)", example="4"
-    ),
-    seating_level: int = Query(
-        None, description="Spaciousness level at least (1-5)", example="4"
+    seating_level: Optional[int] = Query(
+        None, ge=1, le=5, description="Seating level at least (1-5)"
     ),
 ):
     filters = {}
@@ -145,81 +128,37 @@ async def get_cafes(
         filters["cafe_hop_attributes.comfort_level"] = comfort_level
 
     cafes = await app.mongodb["cafes"].find(filters).to_list(100)
+
     return cafes
 
 
+# create a new cafe
 @app.post("/v1/create-cafe", response_model=Cafe)
-async def create_cafe(yelp_id: str, cafe_hop_attributes: CafeHopAttributes):
-    print("Custom attributes", cafe_hop_attributes)
-
-    yelp_data = await get_cafe_by_yelp_id(yelp_id)
-    print("Yelp data fetched", yelp_data)
-
+@limiter.limit("5/minute")
+async def create_cafe(
+    request: Request,
+    name: str = Body(..., description="Name of the cafe"),
+    address: str = Body(..., description="Address of the cafe"),
+    display_phone: Optional[str] = Body(None, description="Phone number of the cafe"),
+    business_hours: Optional[List[dict]] = Body(None, description="Business hours"),
+    is_closed: bool = Body(False, description="If the cafe is closed"),
+    cafe_hop_attributes: Optional[CafeHopAttributes] = Body(
+        None, description="Additional cafe attributes"
+    ),
+):
     cafe = Cafe(
-        yelp_id=yelp_id,
-        name=yelp_data["name"],
-        address=", ".join(yelp_data["location"]["display_address"]),
-        rating=yelp_data.get("rating", 0),
-        display_phone=yelp_data.get("display_phone", ""),
-        business_hours=yelp_data.get("hours", []),
-        is_closed=yelp_data.get("is_closed", False),
-        yelp_url=yelp_data.get("url", ""),
+        name=name,
+        address=address,
+        display_phone=display_phone,
+        business_hours=business_hours,
+        is_closed=is_closed,
         cafe_hop_attributes=cafe_hop_attributes,
     )
 
-    print("Inserting cafe", cafe)
-    response = await app.mongodb["cafes"].insert_one(cafe.dict(by_alias=True))
+    response = await app.mongodb["cafes"].insert_one(
+        cafe.dict(by_alias=True, exclude={"id"})
+    )
     cafe.id = str(response.inserted_id)
+    print(f"Response from mongodb {response}")
+
     return cafe
-
-
-@app.get("/v1/get-yelp-cafes/{search}")
-@limiter.limit("5/hour")
-async def search_yelp_for_cafes(request: Request, search: str):
-    yelp_url = "https://api.yelp.com/v3/businesses/search"
-    yelp_headers = {
-        "Authorization": f"Bearer {os.getenv("YELP_API_KEY")}",
-        "accept": "application/json",
-    }
-    yelp_search_params = {
-        "term": search,
-        "location": "Seattle",
-        "sort_by": "best_match",
-        "limit": 10,
-    }
-
-    response = requests.get(yelp_url, headers=yelp_headers, params=yelp_search_params)
-    if response.status_code != 200:
-        print(
-            f"GET request failed with status code: {response.status_code}",
-            response.text,
-        )
-        return response.json()
-
-    data = response.json()
-    print("Yelp search for businesses response", data)
-
-    return data
-
-
-@app.get("/v1/get-yelp-cafe/{id}")
-@limiter.limit("10/hour")
-async def get_cafe_by_yelp_id(request: Request, id: str):
-    yelp_url = f"https://api.yelp.com/v3/businesses/{id}"
-    yelp_headers = {
-        "Authorization": f"Bearer {os.getenv("YELP_API_KEY")}",
-        "accept": "application/json",
-    }
-
-    response = requests.get(yelp_url, headers=yelp_headers)
-    if response.status_code != 200:
-        print(
-            f"GET request failed with status code: {response.status_code}",
-            response.text,
-        )
-        return response.json()
-
-    data = response.json()
-    print("Yelp search business by ID response", data)
-
-    return data

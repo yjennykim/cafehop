@@ -1,5 +1,9 @@
-from pydantic import BaseModel  # validates the types of the fields
+import json
+from bson import ObjectId
+from pydantic import BaseModel, Field
 from typing import Optional, List
+from bson import json_util
+from pyobjectID import PyObjectId
 
 
 class CafeHopAttributes(BaseModel):
@@ -12,22 +16,15 @@ class CafeHopAttributes(BaseModel):
 
 
 class Cafe(BaseModel):
-    id: Optional[str] = None
-    name: Optional[str]
-    business_hours: Optional[List[dict]]  # business hours as a list of dicts
-    display_phone: Optional[str]
-    is_closed: bool
-    address: Optional[str]
-    rating: Optional[float]
-    yelp_url: Optional[str]
+    id: ObjectId = Field(alias="_id")
+    name: str = Optional[str]
+    business_hours: List[dict] = Optional[List[dict]]
+    display_phone: str = Optional[str]
+    is_closed: bool = Optional[bool]
+    address: Optional[str] = None
+    rating: Optional[float] = None
     cafe_hop_attributes: Optional[CafeHopAttributes]
 
-
-class UpdateCafeHopAttributesDTO(BaseModel):
-    wifi: Optional[bool] = None
-    outlets: Optional[bool] = None
-    neighborhood: Optional[str] = None
-    spacious_level: Optional[int] = None
-    comfort_level: Optional[int] = None
-    seating_level: Optional[int] = None
-    cafe_hop_attributes: Optional[CafeHopAttributes] = None
+    class Config:
+        json_encoders = {ObjectId: str}
+        arbitrary_types_allowed = True
