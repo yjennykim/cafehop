@@ -40,7 +40,9 @@ const CafeDetails = () => {
         {cafe.cafe_hop_attributes && (
           <div className="mt-4">
             <p>Wifi: {cafe.cafe_hop_attributes.wifi ? "✅ Yes" : "❌ No"}</p>
-            <p>Outlets: {cafe.cafe_hop_attributes.outlets ? "✅ Yes" : "❌ No"}</p>
+            <p>
+              Outlets: {cafe.cafe_hop_attributes.outlets ? "✅ Yes" : "❌ No"}
+            </p>
             <p>Spaciousness: {cafe.cafe_hop_attributes.spacious_level}/5</p>
             <p>Comfort: {cafe.cafe_hop_attributes.comfort_level}/5</p>
             <p>Seating: {cafe.cafe_hop_attributes.seating_level}/5</p>

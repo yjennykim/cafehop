@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Feed from "./components/Feed"
+import Feed from "./components/Feed";
 import CafeDetails from "./components/CafeDetails";
 
 const App = () => {
