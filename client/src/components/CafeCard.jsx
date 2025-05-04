@@ -31,15 +31,6 @@ const CafeCard = ({ cafe }) => {
               </p>
             </div>
           )}
-
-          <a
-            href={cafe.yelp_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block mt-4 text-blue-500 hover:underline"
-          >
-            View on Yelp
-          </a>
         </div>
       </div>
     </Link>
