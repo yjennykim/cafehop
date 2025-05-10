@@ -17,7 +17,9 @@ const Feed = () => {
         <p className="text-xs ml-2">[{filteredCafes.length}]</p>
       </div>
 
-      <p>Discover the Best Cafes for Work and Productivity - Beyond Just Coffee</p>
+      <p>
+        Discover the Best Cafes for Work and Productivity - Beyond Just Coffee
+      </p>
       <hr className="mt-3" />
       <FilterButton />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">

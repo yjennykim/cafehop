@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import React from "react";
-import { useSearch } from "../context/SearchContext"; 
+import { useSearch } from "../context/SearchContext";
 const FilterButton = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const { handleSearch } = useSearch(); 
+  const { handleSearch } = useSearch();
 
   const [hasOutlets, setHasOutlets] = useState(false);
   const [hasWifi, setHasWifi] = useState(false);
@@ -28,7 +28,6 @@ const FilterButton = () => {
   useEffect(() => {
     console.log(`hasOutlets state updated: ${hasOutlets}`);
   }, [hasOutlets]);
-
 
   return (
     <div>
@@ -60,7 +59,7 @@ const FilterButton = () => {
               type="checkbox"
               checked={hasOutlets}
               onChange={() => {
-                setHasOutlets(!hasOutlets)
+                setHasOutlets(!hasOutlets);
               }}
               className="mr-2"
             />

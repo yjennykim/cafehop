@@ -24,35 +24,39 @@ export const SearchProvider = ({ children }) => {
     fetchCafes();
   }, []);
 
-  const handleSearch = ({ query, location, hasWifi, hasOutlets, hasSeating, isSpacious }) => {
+  const handleSearch = ({
+    query,
+    location,
+    hasWifi,
+    hasOutlets,
+    hasSeating,
+    isSpacious,
+  }) => {
     const filtered = cafes.filter((cafe) => {
-        console.table(cafe.cafe_hop_attributes);
-      const nameMatch = query ? cafe.name.toLowerCase().includes(query.toLowerCase()) : true;
-      const locationMatch = location ? cafe.address.toLowerCase().includes(location.toLowerCase()) : true;
-        
-      const cafe_attributes = cafe.cafe_hop_attributes
-      const wifiMatch = hasWifi ? cafe_attributes.wifi === true : true;  
-      const outletsMatch = hasOutlets ? cafe_attributes.outlets === true : true; 
+      console.table(cafe.cafe_hop_attributes);
+      const nameMatch = query
+        ? cafe.name.toLowerCase().includes(query.toLowerCase())
+        : true;
+      const locationMatch = location
+        ? cafe.address.toLowerCase().includes(location.toLowerCase())
+        : true;
+
+      const cafe_attributes = cafe.cafe_hop_attributes;
+      const wifiMatch = hasWifi ? cafe_attributes.wifi === true : true;
+      const outletsMatch = hasOutlets ? cafe_attributes.outlets === true : true;
 
       console.log(`
         nameMatch=${nameMatch},
         locationMatch=${locationMatch},
         wifiMatch=${wifiMatch},
         outletsMatch=${outletsMatch},
-    `)
-  
-      return (
-        nameMatch &&
-        locationMatch &&
-        wifiMatch &&
-        outletsMatch
-      );
+    `);
+
+      return nameMatch && locationMatch && wifiMatch && outletsMatch;
     });
-  
+
     setFilteredCafes(filtered);
   };
-  
-  
 
   return (
     <SearchContext.Provider

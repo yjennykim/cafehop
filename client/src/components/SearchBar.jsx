@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useSearch } from "../context/SearchContext";
 
-
 const SearchBar = ({ small = false }) => {
   const { handleSearch } = useSearch();
   const [query, setQuery] = useState("");
