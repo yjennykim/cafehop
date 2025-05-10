@@ -1,49 +1,51 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useSearch } from "../context/SearchContext";
 
-const SearchBar = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+
+const SearchBar = ({ small = false }) => {
+  const { handleSearch } = useSearch();
+  const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
 
-  const handleSearch = (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    onSearch({ query: searchTerm, location });
+    handleSearch({ query, location });
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <form
-        onSubmit={handleSearch}
-        className="flex items-center gap-3 bg-white p-3 rounded shadow"
+    <form
+      onSubmit={onSubmit}
+      className={`flex items-center space-x-2 ${
+        small ? "" : "px-6 py-4 bg-white shadow"
+      }`}
+    >
+      <input
+        type="text"
+        placeholder="Search..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className={`border p-1 rounded text-sm ${
+          small ? "w-24 md:w-32" : "w-1/2"
+        }`}
+      />
+      <input
+        type="text"
+        placeholder="Location..."
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        className={`border p-1 rounded text-sm ${
+          small ? "w-24 md:w-32" : "w-1/3"
+        }`}
+      />
+      <button
+        type="submit"
+        className={`bg-blue-600 text-white px-3 py-1 rounded text-sm ${
+          small ? "hover:bg-blue-700" : ""
+        }`}
       >
-        {/* Main search */}
-        <input
-          type="text"
-          placeholder="Search for cafes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
-        />
-
-        {/* Divider */}
-        <div className="h-6 border-l border-gray-300"></div>
-
-        {/* Location filter */}
-        <input
-          type="text"
-          placeholder="Location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="w-48 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
-        />
-
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Search
-        </button>
-      </form>
-    </div>
+        Go
+      </button>
+    </form>
   );
 };
 
